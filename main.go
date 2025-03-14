@@ -16,6 +16,9 @@ func main() {
 		log.Fatalf("Error loading .env file")
 	}
 
+	// Initialize logging
+	services.InitLogging()
+
 	// Create a ticker and start the UpdateStoreByWeather routine
 	ticker := time.NewTicker(60 * time.Second)
 	defer ticker.Stop()

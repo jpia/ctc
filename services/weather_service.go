@@ -32,7 +32,7 @@ type WeatherErrorResponse struct {
 func checkWeather(date time.Time, location string) (int, error) {
 	apiKey := os.Getenv("WEATHER_API_KEY")
 	if apiKey == "" {
-		return 0, fmt.Errorf("Weather API key not set")
+		return 0, fmt.Errorf("weather API key not set")
 	}
 
 	encodedLocation := url.QueryEscape(location)
@@ -44,9 +44,7 @@ func checkWeather(date time.Time, location string) (int, error) {
 		urlStr = fmt.Sprintf("https://api.weatherapi.com/v1/forecast.json?key=%s&q=%s&dt=%s", apiKey, encodedLocation, date.Format("2006-01-02"))
 	}
 
-	fmt.Printf("Checking weather for %s at %s...\n", location, date.Format("2006-01-02"))
-	fmt.Printf("URL: %s\n", urlStr)
-
+	DebugLog("checking weather for %s at %s using %s\n", location, date.Format("2006-01-02"), urlStr)
 	resp, err := http.Get(urlStr)
 	if err != nil {
 		return 0, err
@@ -66,23 +64,27 @@ func checkWeather(date time.Time, location string) (int, error) {
 		return 0, err
 	}
 
-	return weatherResponse.Forecast.Forecastday[0].Day.Condition.Code, nil
+	conditionCode := weatherResponse.Forecast.Forecastday[0].Day.Condition.Code
+	DebugLog("weather condition code: %d\n", conditionCode)
+	return conditionCode, nil
 }
 
 func UpdateStoreByWeather() {
-	fmt.Println("Checking weather for pending CTCs...")
+
 	for shortcode, ctc := range models.CTCStore {
 		if ctc.Status == models.Pending {
 			weatherCode, err := checkWeather(ctc.ReleaseDate, "New York City")
 			if err != nil {
-				fmt.Printf("Error checking weather for shortcode %s: %v\n", shortcode, err)
+				ErrorLog("Error checking weather for shortcode %s: %v\n", shortcode, err)
 				continue
 			}
 
 			if weatherCode == 1000 {
 				ctc.Status = models.Ready
 				models.CTCStore[shortcode] = ctc
-				fmt.Printf("Shortcode %s is now ready due to clear weather.\n", shortcode)
+				DebugLog("Shortcode %s is now ready due to clear weather.\n", shortcode)
+			} else {
+				DebugLog("Shortcode %s is still pending due to weather code %d.\n", shortcode, weatherCode)
 			}
 		}
 	}
