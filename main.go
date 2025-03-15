@@ -4,7 +4,6 @@ import (
 	"ctc/routes"
 	"ctc/services"
 	"log"
-	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -19,15 +18,8 @@ func main() {
 	// Initialize logging
 	services.InitLogging()
 
-	// Create a ticker and start the UpdateStoreByWeather routine
-	ticker := time.NewTicker(60 * time.Second)
-	defer ticker.Stop()
-	go func() {
-		for {
-			<-ticker.C
-			services.UpdateStoreByWeather()
-		}
-	}()
+	// Start the release service routine
+	go services.StartReleaseService()
 
 	router := routes.SetupRouter()
 	router.Run(":8080")

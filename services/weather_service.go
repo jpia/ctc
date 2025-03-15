@@ -72,23 +72,21 @@ func checkWeather(date time.Time, location string) (int, error) {
 	return conditionCode, nil
 }
 
-func UpdateStoreByWeather() {
+func UpdateWeatherStatus() {
+	weatherInstance := models.GetWeatherStatusInstance()
 
-	for shortcode, ctc := range models.URLStore {
-		if ctc.Status == models.PendingStatus {
-			weatherCode, err := checkWeather(ctc.ReleaseDate, "New York City")
-			if err != nil {
-				ErrorLog("Error checking weather for shortcode %s: %v\n", shortcode, err)
-				continue
-			}
-
-			if weatherCode == 1000 {
-				ctc.Status = models.ReleasedStatus
-				models.URLStore[shortcode] = ctc
-				DebugLog("Shortcode %s is now ready due to clear weather.\n", shortcode)
-			} else {
-				DebugLog("Shortcode %s is still pending due to weather code %d.\n", shortcode, weatherCode)
-			}
-		}
+	if weatherInstance.IsCheckedToday() {
+		DebugLog("Weather status already checked today, skipping update.")
+		return
 	}
+
+	weatherCode, err := checkWeather(time.Now(), "New York City")
+	if err != nil {
+		ErrorLog("Error checking weather: %v\n", err)
+		return
+	}
+
+	weatherInstance.Status = weatherCode
+	weatherInstance.DateChecked = time.Now()
+	DebugLog("Weather status updated: %d\n", weatherCode)
 }
