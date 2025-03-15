@@ -52,7 +52,7 @@ func TestShortenURL(t *testing.T) {
 
 	fmt.Printf("User key shortcode: %s\n", response["shortcode"])
 
-	_, exists := models.CTCStore[response["shortcode"]]
+	_, exists := models.URLStore[response["shortcode"]]
 	assert.True(t, exists)
 
 	// Test with admin key
@@ -71,7 +71,7 @@ func TestShortenURL(t *testing.T) {
 
 	fmt.Printf("Admin key shortcode: %s\n", response["shortcode"])
 
-	_, exists = models.CTCStore[response["shortcode"]]
+	_, exists = models.URLStore[response["shortcode"]]
 	assert.True(t, exists)
 }
 

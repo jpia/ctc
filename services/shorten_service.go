@@ -29,14 +29,18 @@ func ShortenURL(c *gin.Context) {
 	}
 
 	shortcode := generateShortcode(shortcodeLength)
-	ctc := models.CTC{
-		LongURL:     request.LongURL,
-		ReleaseDate: request.ReleaseDate,
-		Shortcode:   shortcode,
-		Status:      models.Pending,
+	url := models.URL{
+		LongURL:          request.LongURL,
+		ReleaseDate:      request.ReleaseDate,
+		ReleaseDateOrig:  request.ReleaseDate,
+		Shortcode:        shortcode,
+		Status:           models.PendingStatus,
+		Delays:           0,
+		ReleaseMethod:    "",
+		ReleaseTimestamp: time.Time{},
 	}
 
-	models.CTCStore[shortcode] = ctc
+	models.URLStore[shortcode] = url
 
 	c.JSON(http.StatusOK, gin.H{"shortcode": shortcode})
 }
@@ -49,7 +53,7 @@ func generateShortcode(n int) string {
 			b[i] = letters[rand.Intn(len(letters))]
 		}
 		shortcode := string(b)
-		if _, exists := models.CTCStore[shortcode]; !exists {
+		if _, exists := models.URLStore[shortcode]; !exists {
 			return shortcode
 		}
 	}

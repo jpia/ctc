@@ -32,3 +32,7 @@ func DebugLog(format string, v ...interface{}) {
 func ErrorLog(format string, v ...interface{}) {
 	log.Printf("[ERROR] "+format, v...)
 }
+
+func CriticalErrorLog(format string, v ...interface{}) {
+	log.Printf("[CRITICAL ERROR] "+format, v...)
+}

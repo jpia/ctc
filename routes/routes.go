@@ -55,7 +55,7 @@ func SetupRouter() *gin.Engine {
 	admin.Use(adminMiddleware)
 	{
 		admin.POST("/override/:shortcode", services.OverrideShortcode)
-		admin.GET("/list", services.ListCTCs)
+		admin.GET("/list", services.ListURLs)
 		admin.POST("/weather-update", func(c *gin.Context) {
 			services.UpdateStoreByWeather()
 			c.JSON(http.StatusOK, gin.H{"success": "Weather update invoked"})

@@ -25,13 +25,13 @@ func TestAccessURL(t *testing.T) {
 	// Create a new Gin router
 	router := routes.SetupRouter()
 
-	// Add a test CTC to the store
+	// Add a test URL to the store
 	shortcode := "test1234"
-	models.CTCStore[shortcode] = models.CTC{
+	models.URLStore[shortcode] = models.URL{
 		LongURL:     "https://example.com",
 		ReleaseDate: time.Now().Add(24 * time.Hour),
 		Shortcode:   shortcode,
-		Status:      models.Pending,
+		Status:      models.PendingStatus,
 	}
 
 	// Test case: Shortcode exists but is not ready
@@ -48,32 +48,12 @@ func TestAccessURL(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "The URL is not yet available. The release date has not passed or the weather condition does not allow access.", response["error"])
 
-	// Test case: Shortcode exists and is ready but release date is in the future
-	models.CTCStore[shortcode] = models.CTC{
-		LongURL:     "https://example.com",
-		ReleaseDate: time.Now().Add(24 * time.Hour),
-		Shortcode:   shortcode,
-		Status:      models.Ready,
-	}
-
-	req, _ = http.NewRequest("GET", "/access/"+shortcode, nil)
-	req.Header.Set("X-API-Key", "user_key")
-
-	rr = httptest.NewRecorder()
-	router.ServeHTTP(rr, req)
-
-	assert.Equal(t, http.StatusForbidden, rr.Code)
-
-	err = json.Unmarshal(rr.Body.Bytes(), &response)
-	assert.NoError(t, err)
-	assert.Equal(t, "The URL is not yet available. The release date has not passed or the weather condition does not allow access.", response["error"])
-
-	// Test case: Shortcode exists and is ready and release date is in the past
-	models.CTCStore[shortcode] = models.CTC{
+	// Test case: Shortcode exists and is released
+	models.URLStore[shortcode] = models.URL{
 		LongURL:     "https://example.com",
 		ReleaseDate: time.Now().Add(-24 * time.Hour),
 		Shortcode:   shortcode,
-		Status:      models.Ready,
+		Status:      models.ReleasedStatus,
 	}
 
 	req, _ = http.NewRequest("GET", "/access/"+shortcode, nil)

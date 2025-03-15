@@ -64,6 +64,9 @@ func checkWeather(date time.Time, location string) (int, error) {
 		return 0, err
 	}
 
+	if len(weatherResponse.Forecast.Forecastday) == 0 {
+		return 0, fmt.Errorf("no forecast data available")
+	}
 	conditionCode := weatherResponse.Forecast.Forecastday[0].Day.Condition.Code
 	DebugLog("weather condition code: %d\n", conditionCode)
 	return conditionCode, nil
@@ -71,8 +74,8 @@ func checkWeather(date time.Time, location string) (int, error) {
 
 func UpdateStoreByWeather() {
 
-	for shortcode, ctc := range models.CTCStore {
-		if ctc.Status == models.Pending {
+	for shortcode, ctc := range models.URLStore {
+		if ctc.Status == models.PendingStatus {
 			weatherCode, err := checkWeather(ctc.ReleaseDate, "New York City")
 			if err != nil {
 				ErrorLog("Error checking weather for shortcode %s: %v\n", shortcode, err)
@@ -80,8 +83,8 @@ func UpdateStoreByWeather() {
 			}
 
 			if weatherCode == 1000 {
-				ctc.Status = models.Ready
-				models.CTCStore[shortcode] = ctc
+				ctc.Status = models.ReleasedStatus
+				models.URLStore[shortcode] = ctc
 				DebugLog("Shortcode %s is now ready due to clear weather.\n", shortcode)
 			} else {
 				DebugLog("Shortcode %s is still pending due to weather code %d.\n", shortcode, weatherCode)

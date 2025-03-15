@@ -2,6 +2,7 @@ package services
 
 import (
 	"ctc/models"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -11,30 +12,30 @@ import (
 func OverrideShortcode(c *gin.Context) {
 	shortcode := c.Param("shortcode")
 
-	ctc, exists := models.CTCStore[shortcode]
+	url, exists := models.URLStore[shortcode]
 	if !exists {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Shortcode not found"})
 		return
 	}
 
-	if ctc.Status == models.Ready && ctc.ReleaseDate.Before(time.Now()) {
-		c.JSON(http.StatusOK, gin.H{"success": "The URL has already been released."})
+	if url.Status == models.ReleasedStatus {
+		c.JSON(http.StatusOK, gin.H{"success": fmt.Sprintf("The URL was already released via the %s method on %s.", url.ReleaseMethod, url.ReleaseTimestamp.Format(time.RFC3339))})
 		return
 	}
 
-	ctc.Status = models.Ready
-	if ctc.ReleaseDate.After(time.Now()) {
-		ctc.ReleaseDate = time.Now()
-	}
-	models.CTCStore[shortcode] = ctc
+	url.Status = models.ReleasedStatus
+	now := time.Now()
+	url.ReleaseTimestamp = now
+	url.ReleaseMethod = models.OverrideReleaseMethod
+	models.URLStore[shortcode] = url
 
 	c.JSON(http.StatusOK, gin.H{"success": "The URL has been released early."})
 }
 
-func ListCTCs(c *gin.Context) {
-	var ctcList []models.CTC
-	for _, ctc := range models.CTCStore {
-		ctcList = append(ctcList, ctc)
+func ListURLs(c *gin.Context) {
+	var urlList []models.URL
+	for _, url := range models.URLStore {
+		urlList = append(urlList, url)
 	}
-	c.JSON(http.StatusOK, ctcList)
+	c.JSON(http.StatusOK, urlList)
 }

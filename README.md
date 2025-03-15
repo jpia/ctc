@@ -45,5 +45,5 @@ This is a URL shortener application built with Go and Gin. It provides endpoints
 1. Run the tests with verbose output:
 
     ```sh
-    go test -v ./...
+    go test -v ./tests/
     ```

@@ -25,13 +25,13 @@ func TestGetStatus(t *testing.T) {
 	// Create a new Gin router
 	router := routes.SetupRouter()
 
-	// Add a test CTC to the store
+	// Add a test URL to the store
 	shortcode := "test1234"
-	models.CTCStore[shortcode] = models.CTC{
+	models.URLStore[shortcode] = models.URL{
 		LongURL:     "https://example.com",
 		ReleaseDate: time.Now().Add(24 * time.Hour),
 		Shortcode:   shortcode,
-		Status:      models.Pending,
+		Status:      models.PendingStatus,
 	}
 
 	// Test case: Shortcode exists
@@ -46,7 +46,7 @@ func TestGetStatus(t *testing.T) {
 	var response map[string]interface{}
 	err := json.Unmarshal(rr.Body.Bytes(), &response)
 	assert.NoError(t, err)
-	assert.Equal(t, string(models.Pending), response["status"])
+	assert.Equal(t, string(models.PendingStatus), response["status"])
 	assert.NotEmpty(t, response["release_date"])
 
 	// Test case: Shortcode does not exist
