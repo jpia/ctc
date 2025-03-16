@@ -1,6 +1,7 @@
 package models
 
 import (
+	"ctc/logger"
 	"sync"
 	"time"
 )
@@ -75,8 +76,14 @@ func GetWeatherStatusInstance() *WeatherStatus {
 
 // IsCheckedToday returns true if DateChecked is equal to today's date (ignoring time)
 func (ws *WeatherStatus) IsCheckedToday() bool {
-	today := time.Now().Truncate(24 * time.Hour)
-	return ws.DateChecked.Truncate(24 * time.Hour).Equal(today)
+	const layout = "2006-01-02"
+	today := time.Now().Format(layout)
+	dateChecked := ws.DateChecked.Format(layout)
+
+	logger.DebugLog("Today's date: %s", today)
+	logger.DebugLog("DateChecked: %s", dateChecked)
+
+	return dateChecked == today
 }
 
 // GetWeatherLabel returns the weather label for a given weather code

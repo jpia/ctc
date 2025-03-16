@@ -20,4 +20,5 @@ func AccessURL(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusForbidden, gin.H{"error": "The URL is not yet available. The release date has not passed or the weather condition does not allow access."})
 	}
+
 }

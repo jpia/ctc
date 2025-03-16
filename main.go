@@ -1,9 +1,11 @@
 package main
 
 import (
+	"ctc/logger"
 	"ctc/routes"
 	"ctc/services"
 	"log"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -15,8 +17,15 @@ func main() {
 		log.Fatalf("Error loading .env file")
 	}
 
+	// Set the timezone to match New York
+	loc, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		log.Fatalf("Failed to load location: %v", err)
+	}
+	time.Local = loc
+
 	// Initialize logging
-	services.InitLogging()
+	logger.InitLogging()
 
 	// Start the release service routine
 	go services.StartReleaseService()
