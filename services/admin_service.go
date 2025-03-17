@@ -38,3 +38,33 @@ func ListURLs(c *gin.Context) {
 	urlList := urlStore.GetAll()
 	c.JSON(http.StatusOK, urlList)
 }
+
+func GetStats(c *gin.Context) {
+	urlStore := models.GetURLStore()
+	urls := urlStore.GetAll()
+
+	totalCount := len(urls)
+	pendingCount := 0
+	delayedCount := 0
+	releasedCount := 0
+
+	for _, url := range urls {
+		switch url.Status {
+		case models.PendingStatus:
+			pendingCount++
+		case models.DelayedStatus:
+			delayedCount++
+		case models.ReleasedStatus:
+			releasedCount++
+		}
+	}
+
+	stats := gin.H{
+		"total_urls":     totalCount,
+		"pending_count":  pendingCount,
+		"delayed_count":  delayedCount,
+		"released_count": releasedCount,
+	}
+
+	c.JSON(http.StatusOK, stats)
+}

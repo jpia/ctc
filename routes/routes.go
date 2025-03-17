@@ -60,6 +60,7 @@ func SetupRouter() *gin.Engine {
 			services.UpdateWeatherStatus()
 			c.JSON(http.StatusOK, gin.H{"success": "Weather update invoked"})
 		})
+		admin.GET("/stats", services.GetStats) // Add the new stats route
 	}
 
 	return router
