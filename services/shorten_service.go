@@ -1,7 +1,9 @@
 package services
 
 import (
+	"ctc/logger"
 	"ctc/models"
+	"fmt"
 	"math/rand"
 	"net/http"
 	"os"
@@ -28,7 +30,12 @@ func ShortenURL(c *gin.Context) {
 		return
 	}
 
-	shortcode := generateShortcode(shortcodeLength)
+	shortcode, err := generateShortcode(shortcodeLength)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate unique shortcode"})
+		return
+	}
+
 	url := models.URL{
 		LongURL:          request.LongURL,
 		ReleaseDate:      request.ReleaseDate,
@@ -46,17 +53,21 @@ func ShortenURL(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"shortcode": shortcode})
 }
 
-func generateShortcode(n int) string {
+func generateShortcode(n int) (string, error) {
 	const letters = "abcdefghijklmnopqrstuvwxyz0123456789"
-	for {
+	urlStore := models.GetURLStore()
+
+	for attempts := 0; attempts < 10; attempts++ {
 		b := make([]byte, n)
 		for i := range b {
 			b[i] = letters[rand.Intn(len(letters))]
 		}
 		shortcode := string(b)
-		urlStore := models.GetURLStore()
 		if _, exists := urlStore.Get(shortcode); !exists {
-			return shortcode
+			return shortcode, nil
 		}
+		logger.DebugLog("Attempt %d: Shortcode %s already exists", attempts+1, shortcode)
 	}
+
+	return "", fmt.Errorf("failed to generate unique shortcode after 10 attempts")
 }
