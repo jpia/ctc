@@ -9,6 +9,8 @@ import (
 )
 
 func ReleasePendingURLs() {
+	startTime := time.Now() // Start tracking time
+
 	weatherInstance := models.GetWeatherStatusInstance()
 	today := time.Now()
 
@@ -21,8 +23,12 @@ func ReleasePendingURLs() {
 	urlStore := models.GetURLStore()
 	urls := urlStore.GetAll()
 
+	eligibleCount := 0
+	totalCount := len(urls)
+
 	for _, url := range urls {
 		if (url.Status == models.PendingStatus || url.Status == models.DelayedStatus) && today.After(url.ReleaseDate) {
+			eligibleCount++
 			if models.IsValidForStandardRelease(weatherInstance.Status) {
 				url.Status = models.ReleasedStatus
 				url.ReleaseMethod = models.StandardReleaseMethod
@@ -44,6 +50,9 @@ func ReleasePendingURLs() {
 			}
 		}
 	}
+
+	duration := time.Since(startTime) // Calculate the duration
+	logger.InfoLog("ReleasePendingURLs took %s and checked %d eligible URLs out of %d total URLs", duration, eligibleCount, totalCount)
 }
 
 func StartReleaseService() {

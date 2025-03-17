@@ -30,6 +30,15 @@ func main() {
 	// Start the release service routine
 	go services.StartReleaseService()
 
+	// Create a new Gin router
 	router := routes.SetupRouter()
+
+	// Set trusted proxies
+	err = router.SetTrustedProxies([]string{"127.0.0.1"}) // Replace with your trusted proxy IPs
+	if err != nil {
+		log.Fatalf("Failed to set trusted proxies: %v", err)
+	}
+
+	// Run the router
 	router.Run(":8080")
 }

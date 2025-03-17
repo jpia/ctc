@@ -29,6 +29,10 @@ func DebugLog(format string, v ...interface{}) {
 	}
 }
 
+func InfoLog(format string, v ...interface{}) {
+	log.Printf("[INFO] "+format, v...)
+}
+
 func ErrorLog(format string, v ...interface{}) {
 	log.Printf("[ERROR] "+format, v...)
 }

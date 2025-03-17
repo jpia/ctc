@@ -45,7 +45,7 @@ func checkWeather(date time.Time, location string) (int, error) {
 		urlStr = fmt.Sprintf("https://api.weatherapi.com/v1/forecast.json?key=%s&q=%s&dt=%s", apiKey, encodedLocation, date.Format("2006-01-02"))
 	}
 
-	logger.DebugLog("checking weather for %s at %s using %s\n", location, date.Format("2006-01-02"), urlStr)
+	logger.InfoLog("checking weather for %s at %s using %s\n", location, date.Format("2006-01-02"), urlStr)
 	resp, err := http.Get(urlStr)
 	if err != nil {
 		return 0, err
@@ -69,7 +69,7 @@ func checkWeather(date time.Time, location string) (int, error) {
 		return 0, fmt.Errorf("no forecast data available")
 	}
 	conditionCode := weatherResponse.Forecast.Forecastday[0].Day.Condition.Code
-	logger.DebugLog("weather condition code: %d\n", conditionCode)
+	logger.InfoLog("weather condition code: %d\n", conditionCode)
 	return conditionCode, nil
 }
 
@@ -77,7 +77,7 @@ func UpdateWeatherStatus() {
 	weatherInstance := models.GetWeatherStatusInstance()
 
 	if weatherInstance.IsCheckedToday() {
-		logger.DebugLog("Weather status already checked today, skipping update.")
+		logger.InfoLog("Weather status already checked today, skipping update.")
 		return
 	}
 
