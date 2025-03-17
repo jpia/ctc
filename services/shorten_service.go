@@ -40,7 +40,8 @@ func ShortenURL(c *gin.Context) {
 		ReleaseTimestamp: time.Time{},
 	}
 
-	models.URLStore[shortcode] = url
+	urlStore := models.GetURLStore()
+	urlStore.Set(shortcode, url, models.HighUpdatePriority)
 
 	c.JSON(http.StatusOK, gin.H{"shortcode": shortcode})
 }
@@ -53,7 +54,8 @@ func generateShortcode(n int) string {
 			b[i] = letters[rand.Intn(len(letters))]
 		}
 		shortcode := string(b)
-		if _, exists := models.URLStore[shortcode]; !exists {
+		urlStore := models.GetURLStore()
+		if _, exists := urlStore.Get(shortcode); !exists {
 			return shortcode
 		}
 	}

@@ -12,7 +12,8 @@ import (
 func OverrideShortcode(c *gin.Context) {
 	shortcode := c.Param("shortcode")
 
-	url, exists := models.URLStore[shortcode]
+	urlStore := models.GetURLStore()
+	url, exists := urlStore.Get(shortcode)
 	if !exists {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Shortcode not found"})
 		return
@@ -27,15 +28,13 @@ func OverrideShortcode(c *gin.Context) {
 	now := time.Now()
 	url.ReleaseTimestamp = now
 	url.ReleaseMethod = models.OverrideReleaseMethod
-	models.URLStore[shortcode] = url
+	urlStore.Set(shortcode, url, models.HighUpdatePriority)
 
 	c.JSON(http.StatusOK, gin.H{"success": "The URL has been released early."})
 }
 
 func ListURLs(c *gin.Context) {
-	var urlList []models.URL
-	for _, url := range models.URLStore {
-		urlList = append(urlList, url)
-	}
+	urlStore := models.GetURLStore()
+	urlList := urlStore.GetAll()
 	c.JSON(http.StatusOK, urlList)
 }

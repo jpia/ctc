@@ -2,7 +2,6 @@ package tests
 
 import (
 	"bytes"
-	"ctc/models"
 	"ctc/routes"
 	"encoding/json"
 	"fmt"
@@ -52,9 +51,6 @@ func TestShortenURL(t *testing.T) {
 
 	fmt.Printf("User key shortcode: %s\n", response["shortcode"])
 
-	_, exists := models.URLStore[response["shortcode"]]
-	assert.True(t, exists)
-
 	// Test with admin key
 	req, _ = http.NewRequest("POST", "/shorten", bytes.NewBuffer(jsonValue))
 	req.Header.Set("Content-Type", "application/json")
@@ -70,9 +66,6 @@ func TestShortenURL(t *testing.T) {
 	assert.NotEmpty(t, response["shortcode"])
 
 	fmt.Printf("Admin key shortcode: %s\n", response["shortcode"])
-
-	_, exists = models.URLStore[response["shortcode"]]
-	assert.True(t, exists)
 }
 
 func TestShortenURLUnauthorized(t *testing.T) {

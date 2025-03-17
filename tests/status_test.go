@@ -27,12 +27,16 @@ func TestGetStatus(t *testing.T) {
 
 	// Add a test URL to the store
 	shortcode := "test1234"
-	models.URLStore[shortcode] = models.URL{
+	urlStore := models.GetURLStore()
+	urlStore.Reset()
+	urlStore.Set(shortcode, models.URL{
 		LongURL:     "https://example.com",
 		ReleaseDate: time.Now().Add(24 * time.Hour),
 		Shortcode:   shortcode,
 		Status:      models.PendingStatus,
-	}
+	}, models.HighUpdatePriority)
+
+	time.Sleep(1 * time.Millisecond)
 
 	// Test case: Shortcode exists
 	req, _ := http.NewRequest("GET", "/status/"+shortcode, nil)

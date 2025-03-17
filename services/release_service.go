@@ -18,26 +18,29 @@ func ReleasePendingURLs() {
 		today = weatherInstance.DateChecked
 	}
 
-	for shortcode, url := range models.URLStore {
+	urlStore := models.GetURLStore()
+	urls := urlStore.GetAll()
+
+	for _, url := range urls {
 		if (url.Status == models.PendingStatus || url.Status == models.DelayedStatus) && today.After(url.ReleaseDate) {
 			if models.IsValidForStandardRelease(weatherInstance.Status) {
 				url.Status = models.ReleasedStatus
 				url.ReleaseMethod = models.StandardReleaseMethod
 				url.ReleaseTimestamp = time.Now()
-				models.URLStore[shortcode] = url
-				logger.DebugLog("Shortcode %s is now released due to valid weather.\n", shortcode)
+				urlStore.Set(url.Shortcode, url, models.LowUpdatePriority)
+				logger.DebugLog("Shortcode %s is now released due to valid weather.\n", url.Shortcode)
 			} else if models.IsValidForApiSickDayRelease(weatherInstance.Status) {
 				url.Status = models.ReleasedStatus
 				url.ReleaseMethod = models.ApiSickDayReleaseMethod
 				url.ReleaseTimestamp = time.Now()
-				models.URLStore[shortcode] = url
-				logger.DebugLog("Shortcode %s is now released due to API Sick Day.\n", shortcode)
+				urlStore.Set(url.Shortcode, url, models.LowUpdatePriority)
+				logger.DebugLog("Shortcode %s is now released due to API Sick Day.\n", url.Shortcode)
 			} else {
 				url.Status = models.DelayedStatus
 				url.ReleaseDate = today.Add(24 * time.Hour)
 				url.Delays++
-				models.URLStore[shortcode] = url
-				logger.DebugLog("Shortcode %s release delayed due to invalid weather.\n", shortcode)
+				urlStore.Set(url.Shortcode, url, models.LowUpdatePriority)
+				logger.DebugLog("Shortcode %s release delayed due to invalid weather.\n", url.Shortcode)
 			}
 		}
 	}

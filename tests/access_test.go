@@ -4,6 +4,7 @@ import (
 	"ctc/models"
 	"ctc/routes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -27,12 +28,14 @@ func TestAccessURL(t *testing.T) {
 
 	// Add a test URL to the store
 	shortcode := "test1234"
-	models.URLStore[shortcode] = models.URL{
+	urlStore := models.GetURLStore()
+	urlStore.Reset()
+	urlStore.Set(shortcode, models.URL{
 		LongURL:     "https://example.com",
 		ReleaseDate: time.Now().Add(24 * time.Hour),
 		Shortcode:   shortcode,
 		Status:      models.PendingStatus,
-	}
+	}, models.HighUpdatePriority)
 
 	// Test case: Shortcode exists but is not ready
 	req, _ := http.NewRequest("GET", "/access/"+shortcode, nil)
@@ -49,19 +52,25 @@ func TestAccessURL(t *testing.T) {
 	assert.Equal(t, "The URL is not yet available. The release date has not passed or the weather condition does not allow access.", response["error"])
 
 	// Test case: Shortcode exists and is released
-	models.URLStore[shortcode] = models.URL{
-		LongURL:     "https://example.com",
-		ReleaseDate: time.Now().Add(-24 * time.Hour),
-		Shortcode:   shortcode,
-		Status:      models.ReleasedStatus,
-	}
+	urlStore.Set(shortcode, models.URL{
+		LongURL:          "https://example.com",
+		ReleaseDate:      time.Now().Add(-24 * time.Hour),
+		Shortcode:        shortcode,
+		Status:           models.ReleasedStatus,
+		ReleaseMethod:    models.StandardReleaseMethod,
+		ReleaseTimestamp: time.Now(),
+	}, models.HighUpdatePriority)
+
+	// sleep for 1 millisecond to give the URL time to be updated
+	time.Sleep(1 * time.Millisecond)
 
 	req, _ = http.NewRequest("GET", "/access/"+shortcode, nil)
 	req.Header.Set("X-API-Key", "user_key")
 
 	rr = httptest.NewRecorder()
 	router.ServeHTTP(rr, req)
-
+	// print the response body
+	fmt.Println(rr.Body.String())
 	assert.Equal(t, http.StatusOK, rr.Code)
 
 	err = json.Unmarshal(rr.Body.Bytes(), &response)

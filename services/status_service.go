@@ -9,7 +9,8 @@ import (
 
 func GetStatus(c *gin.Context) {
 	shortcode := c.Param("shortcode")
-	ctc, exists := models.URLStore[shortcode]
+	urlStore := models.GetURLStore()
+	ctc, exists := urlStore.Get(shortcode)
 	if !exists {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Shortcode not found"})
 		return

@@ -9,7 +9,8 @@ import (
 
 func AccessURL(c *gin.Context) {
 	shortcode := c.Param("shortcode")
-	url, exists := models.URLStore[shortcode]
+	urlStore := models.GetURLStore()
+	url, exists := urlStore.Get(shortcode)
 	if !exists {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Shortcode not found"})
 		return
@@ -20,5 +21,4 @@ func AccessURL(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusForbidden, gin.H{"error": "The URL is not yet available. The release date has not passed or the weather condition does not allow access."})
 	}
-
 }
