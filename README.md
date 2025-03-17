@@ -154,31 +154,3 @@ I have created a basic stress tester called `ctctester` which can be found at [h
 By default, it will send 500 "shorten" requests and 100 overrides request per batch. It will also send a batch every 2 seconds.
 
 Just make sure that this ctc repo is running first before running the ctctester.
-
-### Nifty Admin Routes
-
-The `admin/list` route allows you to list all URLs stored in the system.
-
-- **Endpoint**: `GET /admin/list`
-- **Headers**: `X-API-Key: your_admin_key`
-- **Response**: A JSON array of all URLs.
-
-Example request:
-
-```sh
-curl -H "X-API-Key: your_admin_key" http://localhost:8080/admin/list
-```
-
-The `admin/stats` route provides statistics about the URLs stored in the system, including the total number of URLs and counts for pending, delayed, and released URLs.
-
-- **Endpoint**: `GET /admin/stats`
-- **Headers**: `X-API-Key: your_admin_key`
-- **Response**: A JSON object with URL statistics.
-
-Example request:
-
-```sh
-curl -H "X-API-Key: your_admin_key" http://localhost:8080/admin/stats
-```
-
-
